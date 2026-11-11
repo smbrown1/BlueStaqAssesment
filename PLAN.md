@@ -12,7 +12,7 @@ The order in which features are built, and a log of where the work stands. The d
 
 ## Current position
 
-**Phase 1, step 1.5** (not started).
+**Checkpoint 1**: phase 1 is built and waiting for human review. Phase 2 has not started.
 
 ## Phase 0: Foundation
 
@@ -26,7 +26,7 @@ The order in which features are built, and a log of where the work stands. The d
 - [x] 1.2 `POST /api/v1/users`: register, hash the password, return the user without it
 - [x] 1.3 Registration validation (`400`) and taken username (`409`)
 - [x] 1.4 HTTP Basic checked against the `users` table
-- [ ] 1.5 `GET /api/v1/users/me`
+- [x] 1.5 `GET /api/v1/users/me`
 - [ ] **Checkpoint 1:** human review
 
 ## Phase 2: Teams
@@ -79,3 +79,4 @@ The order in which features are built, and a log of where the work stands. The d
 | 2026-11-11 | 1.2 | `POST /api/v1/users` registers a user with a BCrypt-hashed password; 15 tests passing. |
 | 2026-11-11 | 1.3 | Registration returns `400` for invalid input and `409` for a taken username, as problem-details JSON; 33 tests passing. |
 | 2026-11-11 | 1.4 | HTTP Basic credentials are checked against the `users` table; 39 tests passing. |
+| 2026-11-11 | 1.5 | `GET /api/v1/users/me` returns the calling user; 42 tests passing. Phase 1 flow verified against the running service. Stopped at checkpoint 1. |

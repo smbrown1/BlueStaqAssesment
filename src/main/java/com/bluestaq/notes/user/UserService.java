@@ -1,6 +1,7 @@
 package com.bluestaq.notes.user;
 
 import java.util.Locale;
+import java.util.UUID;
 
 import com.bluestaq.notes.error.ConflictException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -38,6 +39,12 @@ public class UserService {
 			// The unique constraint on the column is what finally decides.
 			throw usernameTaken(normalized);
 		}
+	}
+
+	/** Returns the user with the given id, which must exist. */
+	@Transactional(readOnly = true)
+	public User get(UUID id) {
+		return users.findById(id).orElseThrow();
 	}
 
 	private static ConflictException usernameTaken(String username) {
