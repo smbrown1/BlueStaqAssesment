@@ -35,3 +35,11 @@ The API is documented with springdoc-openapi and shown in Swagger UI at `/swagge
 - HTTP Basic is required by default (set in `OpenApiConfig`). For an endpoint that needs no credentials, add an empty `@SecurityRequirements` annotation so Swagger UI does not show a lock on it, and permit its path in `SecurityConfig`.
 - Add or update a test that checks the endpoint appears in `/v3/api-docs` as intended.
 - If the general setup changes (title, version, security scheme, documentation paths), update `OpenApiConfig`, `SecurityConfig` and `ApiDocsTests` together.
+
+## 5. Follow the plan, keep it current, and stop at checkpoints
+
+- `PLAN.md` sets the order of work. Build the steps in that order and do not start a step that is not in it.
+- When a step is finished, tick it off, update "Current position" and add a line to the progress log, in the same commit as the work.
+- Stop at every checkpoint in the plan and wait for human approval before starting the next phase. Report what was built, the test results, anything that differs from the plan, and what comes next.
+- Having a plan does not relax rule 3. Stop in the middle of a phase for any design question that `DECISIONS.md` does not already answer.
+- Changing the plan itself (adding, dropping or reordering steps) needs approval first.
