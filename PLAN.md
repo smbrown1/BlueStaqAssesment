@@ -12,7 +12,7 @@ The order in which features are built, and a log of where the work stands. The d
 
 ## Current position
 
-**Phase 1, step 1.2** (not started).
+**Phase 1, step 1.3** (not started).
 
 ## Phase 0: Foundation
 
@@ -23,7 +23,7 @@ The order in which features are built, and a log of where the work stands. The d
 ## Phase 1: Users and authentication
 
 - [x] 1.1 First Flyway migration: the `users` table
-- [ ] 1.2 `POST /api/v1/users`: register, hash the password, return the user without it
+- [x] 1.2 `POST /api/v1/users`: register, hash the password, return the user without it
 - [ ] 1.3 Registration validation (`400`) and taken username (`409`)
 - [ ] 1.4 HTTP Basic checked against the `users` table
 - [ ] 1.5 `GET /api/v1/users/me`
@@ -76,3 +76,4 @@ The order in which features are built, and a log of where the work stands. The d
 | 2026-11-11 | 0.3 | Swagger UI added with springdoc-openapi 3.2.0; 7 tests passing. |
 | 2026-11-11 | | Plan created. |
 | 2026-11-11 | 1.1 | `users` table created by migration V1; 10 tests passing. |
+| 2026-11-11 | 1.2 | `POST /api/v1/users` registers a user with a BCrypt-hashed password; 15 tests passing. |
