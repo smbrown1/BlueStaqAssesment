@@ -277,3 +277,17 @@ Each entry records:
 - **Options considered:** Swagger UI, Scalar, Redoc, Spring REST Docs, an `.http` request file.
 - **Rationale:** Swagger UI is the page reviewers are most likely to recognise, it can send real requests, and it comes with springdoc as one dependency. Scalar looks more modern but is less familiar. Redoc is read-only. Spring REST Docs produces static pages and needs much more setup. The documentation is open so a reviewer can load it before they have an account. Accepted tradeoff: anyone who can reach the service can read the full API description.
 - **Decided by / date:** Steven Brown, 2026-11-11
+
+## 035: Usernames use a restricted character set and are stored in lower case
+
+- **Decision:** A username may contain only letters, digits, dot, underscore and hyphen. It is converted to lower case at registration and at login, so `Alice` and `alice` are the same user.
+- **Options considered:** Restricted and lower-cased; restricted and case-sensitive; any characters except a colon.
+- **Rationale:** HTTP Basic separates the username from the password with a colon, so a username containing one could never log in; some restriction is required. A small character set avoids spaces and look-alike symbols. Lower-casing prevents two accounts that differ only by case, which would be confusing when adding a team member by username.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 036: Passwords are at most 64 characters
+
+- **Decision:** A password is 8 to 64 characters. It must also fit in 72 bytes once encoded, which only matters for passwords with many non-ASCII characters. Anything longer is rejected with `400`. This extends decision 030.
+- **Options considered:** A limit of 72 bytes; a lower, rounder limit such as 64 characters.
+- **Rationale:** BCrypt cannot hash more than 72 bytes, so some maximum is required to make every character of a password count. 64 characters is simpler to document than a byte count. The byte check stays as a backstop because a 64-character password can exceed 72 bytes if it uses characters outside ASCII.
+- **Decided by / date:** Steven Brown, 2026-11-11
