@@ -80,3 +80,17 @@ Each entry records:
 - **Options considered:** Flyway migrations, Hibernate automatic schema generation.
 - **Rationale:** Migrations give a versioned schema that reviewers can read directly. Hibernate picks different column types on different databases, so explicit standard SQL keeps the schema the same on H2 and PostgreSQL. Accepted tradeoff: one more dependency, and each schema change needs a migration file.
 - **Decided by / date:** Steven Brown, 2026-11-11
+
+## 011: Gradle build scripts use the Kotlin DSL
+
+- **Decision:** Write the build scripts in Kotlin (`build.gradle.kts`), not Groovy.
+- **Options considered:** Kotlin DSL, Groovy DSL.
+- **Rationale:** Kotlin is Gradle's default for new projects and gives type checking and editor completion in the build file.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 012: Base package is com.bluestaq.notes
+
+- **Decision:** All application code lives under the base package `com.bluestaq.notes`. The Gradle group is `com.bluestaq` and the artifact name is `notes`.
+- **Options considered:** None recorded.
+- **Rationale:** None recorded yet.
+- **Decided by / date:** Steven Brown, 2026-11-11
