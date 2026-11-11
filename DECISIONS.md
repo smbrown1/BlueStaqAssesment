@@ -120,5 +120,40 @@ Each entry records:
 
 - **Decision:** Beyond create, read, update and delete, notes get edit conflict detection (a save based on a stale copy is rejected instead of overwriting) and paged list endpoints. Text search, tags, edit history and soft delete are out of scope and listed in the README as nice to have with more time.
 - **Options considered:** Edit conflict detection, paging, text search, tags, edit history, soft delete.
-- **Rationale:** Notes shared with a team can be edited by more than one person, so silent overwrites are a correctness problem, and JPA makes detection cheap. Paging is cheap with Spring Data and avoids unbounded responses. Each deferred feature adds schema and tests, and text search is where H2 and PostgreSQL differ most.
+- **Rationale:** Silent overwrites are a correctness problem, and JPA makes detection cheap. Since decision 017 makes shared notes read-only for everyone but the owner, conflict detection currently guards the owner saving from two sessions at once; it becomes essential if team members are later allowed to edit. Paging is cheap with Spring Data and avoids unbounded responses. Each deferred feature adds schema and tests, and text search is where H2 and PostgreSQL differ most.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 017: Only the owner can change a note; team members read it
+
+- **Decision:** A note shared with a team is read-only for that team's members. Only the owner can edit, delete, share or unshare it.
+- **Options considered:** Team members can edit shared notes; team members can only read them.
+- **Rationale:** This is the smallest rule set that delivers the use case for a first version: one user writes notes and shares them with a team. It keeps permission checks to two cases, owner or reader. Letting team members edit is listed in the README as a change to make with more time.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 018: A note can be shared with more than one team
+
+- **Decision:** The owner can share one note with any number of teams.
+- **Options considered:** One team per note; many teams per note.
+- **Rationale:** The table linking notes to teams supports many teams at no extra cost, and limiting it to one would need an extra rule.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 019: A user can share a note with a team they are not a member of
+
+- **Decision:** The owner does not have to belong to a team to share a note with it.
+- **Options considered:** Owner must be a member of the team; owner can share with any team.
+- **Rationale:** Sharing across teams is part of the intended use: someone on one team should be able to pass a note to another team. Accepted tradeoff: a team can receive notes from people outside it, and has no way to refuse them in this version.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 020: Any team member can add members; the creator is the first member
+
+- **Decision:** The user who creates a team becomes its first member. Any existing member can add another user to the team.
+- **Options considered:** Any member can add members; only the creator can add members; team roles (deferred by decision 015).
+- **Rationale:** Without roles, this is the simplest rule that still stops outsiders from adding themselves to a team and reading its shared notes.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 021: User registration is open
+
+- **Decision:** Anyone can register a user through an endpoint that needs no authentication.
+- **Options considered:** Open registration; users seeded or created by an administrator.
+- **Rationale:** Reviewers can start from an empty database and create their own users. Accepted tradeoff: nothing limits who signs up, which a real deployment would need to control.
 - **Decided by / date:** Steven Brown, 2026-11-11
