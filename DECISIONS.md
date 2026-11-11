@@ -263,3 +263,10 @@ Each entry records:
 - **Options considered:** Keep them; remove them.
 - **Rationale:** The Gradle build replaces them, and IntelliJ regenerates its own files when it imports the Gradle project.
 - **Decided by / date:** Steven Brown, 2026-11-11
+
+## 033: Health check uses Spring Boot Actuator
+
+- **Decision:** The service has a health endpoint at `GET /actuator/health`, provided by Spring Boot Actuator. It needs no authentication, checks the database connection, and lists each component it checked with its status. It returns `200` when everything is up and `503` when something is down.
+- **Options considered:** Spring Boot Actuator; a hand-written controller at `/api/v1/health`.
+- **Rationale:** Actuator is built in and widely recognised, and its health check already tests the database, so there is almost no code to write or maintain. Accepted tradeoffs: one more dependency, and the path sits outside the `/api/v1` prefix used by the other endpoints (decision 028). Only the health endpoint is exposed over HTTP, which is Actuator's default.
+- **Decided by / date:** Steven Brown, 2026-11-11

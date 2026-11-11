@@ -2,6 +2,26 @@
 
 Backend for a note-taking service shared among several small teams. Built with Java 25, Spring Boot and Gradle. The task is described in `Requirements.md`, and every design decision is logged in `DECISIONS.md`.
 
+## Running the service
+
+You need a JDK (17 or newer) installed, with `JAVA_HOME` pointing at it, to launch Gradle. The build itself uses Java 25 and downloads it if it is missing.
+
+```
+./gradlew bootRun
+```
+
+On Windows use `gradlew.bat bootRun`. The service listens on port 8080 and stores its data in `./data`.
+
+Check that it is up and connected to its database (no credentials needed):
+
+```
+curl http://localhost:8080/actuator/health
+```
+
+A healthy service answers `200` with `"status":"UP"`, including `"db":{"status":"UP"}`.
+
+Run the tests with `./gradlew test`.
+
 ## Design choices I spent the most time on
 
 ### 1. Storage: H2, an embedded SQL database
