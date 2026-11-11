@@ -94,3 +94,31 @@ Each entry records:
 - **Options considered:** None recorded.
 - **Rationale:** None recorded yet.
 - **Decided by / date:** Steven Brown, 2026-11-11
+
+## 013: Authentication is HTTP Basic with Spring Security
+
+- **Decision:** Callers authenticate with HTTP Basic. Spring Security checks the credentials against users stored in the database, with passwords stored hashed.
+- **Options considered:** No identity, a trusted `X-User-Id` header, HTTP Basic with Spring Security, token login (JWT).
+- **Rationale:** Sharing rules mean nothing unless the service knows who is calling, which rules out no identity. A trusted header lets anyone claim to be anyone. HTTP Basic is real authentication with little code, and reviewers can test it with `curl -u user:pass`. JWT needs a login endpoint, token signing and expiry handling for little extra value here. Accepted tradeoffs: Spring Security adds configuration that has to be explained, and Basic sends credentials on every request, so real use needs HTTPS.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 014: A note belongs to a user, who shares it with teams
+
+- **Decision:** Each note is owned by the user who wrote it. It is private until the owner shares it with a team.
+- **Options considered:** Notes belong to one team; notes belong to a user who shares them with teams; per-note permissions for individual users.
+- **Rationale:** The use case is that one user writes their notes and then shares them with a team. Team-owned notes cannot express a private note or a draft. Per-note permissions for individual users is more than several small teams need. Accepted tradeoff: an extra table linking notes to teams, and more permission cases to test than team-owned notes.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 015: Users and teams are managed through endpoints, without roles
+
+- **Decision:** The service has endpoints to register users, create teams and add team members. Team members have no roles.
+- **Options considered:** Seeded users and teams only; management endpoints; management endpoints plus team roles (admin and member).
+- **Rationale:** With endpoints, reviewers can use the service end to end from an empty database, which seeded data does not allow. Roles are the better long-term model, but they add rules to build, test and defend, so they are listed in the README as a change to make with more time.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 016: Notes get edit conflict detection and paging; other features are deferred
+
+- **Decision:** Beyond create, read, update and delete, notes get edit conflict detection (a save based on a stale copy is rejected instead of overwriting) and paged list endpoints. Text search, tags, edit history and soft delete are out of scope and listed in the README as nice to have with more time.
+- **Options considered:** Edit conflict detection, paging, text search, tags, edit history, soft delete.
+- **Rationale:** Notes shared with a team can be edited by more than one person, so silent overwrites are a correctness problem, and JPA makes detection cheap. Paging is cheap with Spring Data and avoids unbounded responses. Each deferred feature adds schema and tests, and text search is where H2 and PostgreSQL differ most.
+- **Decided by / date:** Steven Brown, 2026-11-11

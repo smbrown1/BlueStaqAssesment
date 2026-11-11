@@ -24,3 +24,11 @@ The alternative I weighed was PostgreSQL through Docker Compose. It is closer to
 ## What I'd change with more time
 
 - **Move to PostgreSQL.** H2 was chosen to make the service easy to run and review, not because it is the right database for real use. With more time I would run the service on PostgreSQL, provide it through Docker Compose, and run the tests against it so that differences between the two databases are caught.
+- **Add team roles.** Team members currently have no roles. With more time I would add team admins and members, so that only admins can change membership or remove a team.
+
+Nice to have:
+
+- **Text search** across note titles and bodies.
+- **Tags** for organising notes.
+- **Edit history**, so earlier versions of a note can be viewed and restored.
+- **Soft delete**, so a deleted note can be recovered.
