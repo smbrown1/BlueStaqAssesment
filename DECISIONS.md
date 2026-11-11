@@ -249,3 +249,17 @@ Each entry records:
 - **Options considered:** None recorded beyond this proposal.
 - **Rationale:** None recorded yet.
 - **Decided by / date:** Steven Brown, 2026-11-11
+
+## 031: Code is packaged by feature
+
+- **Decision:** Under `com.bluestaq.notes`, code is grouped into feature packages (`user`, `team`, `note`), each holding its own controller, service, repository and entity.
+- **Options considered:** Package by feature; package by layer (`controller`, `service`, `repository`, `model`).
+- **Rationale:** Packaging by feature keeps related code together and makes the domain visible from the folder list. Packaging by layer is the more traditional Spring layout, but it spreads each feature across several packages.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 032: The plain IntelliJ project files are removed
+
+- **Decision:** `Bluestaq.iml` and `src/Main.java` are deleted, and `.idea/` is no longer tracked in Git.
+- **Options considered:** Keep them; remove them.
+- **Rationale:** The Gradle build replaces them, and IntelliJ regenerates its own files when it imports the Gradle project.
+- **Decided by / date:** Steven Brown, 2026-11-11
