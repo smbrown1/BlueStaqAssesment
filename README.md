@@ -49,6 +49,8 @@ What I gave up:
 - **Move to PostgreSQL.** H2 was chosen to make the service easy to run and review, not because it is the right database for real use. With more time I would run the service on PostgreSQL, provide it through Docker Compose, and run the tests against it so that differences between the two databases are caught.
 - **Add team roles.** Team members currently have no roles. With more time I would add team admins and members, so that only admins can change membership or remove a team.
 - **Let team members edit shared notes.** A shared note is currently read-only for everyone but its owner. With more time I would let the owner grant edit access to a team.
+- **Let members be removed from a team, or leave it.** Team membership can currently only grow.
+- **Let users change their password or delete their account.**
 
 Nice to have:
 

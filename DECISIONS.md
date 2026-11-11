@@ -157,3 +157,95 @@ Each entry records:
 - **Options considered:** Open registration; users seeded or created by an administrator.
 - **Rationale:** Reviewers can start from an empty database and create their own users. Accepted tradeoff: nothing limits who signs up, which a real deployment would need to control.
 - **Decided by / date:** Steven Brown, 2026-11-11
+
+## 022: Schema has five tables
+
+- **Decision:** The schema is:
+
+  | Table | Columns |
+  |---|---|
+  | `users` | `id`, `username` (unique), `password_hash`, `created_at` |
+  | `teams` | `id`, `name` (unique), `created_by` → users, `created_at` |
+  | `team_members` | `team_id` → teams, `user_id` → users, `added_at`; primary key is the pair |
+  | `notes` | `id`, `owner_id` → users, `title`, `body`, `version`, `created_at`, `updated_at` |
+  | `note_shares` | `note_id` → notes, `team_id` → teams, `shared_at`; primary key is the pair |
+
+  Passwords are stored as BCrypt hashes and never returned. Deleting a note removes its shares.
+- **Options considered:** None recorded beyond this proposal.
+- **Rationale:** One table per concept from decisions 013 to 021. The two linking tables use the pair of IDs as their primary key, so the database itself prevents a duplicate membership or share. `version` on notes carries edit conflict detection (decision 016).
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 023: Endpoint list
+
+- **Decision:** The service exposes these endpoints under `/api/v1` (decision 028). All need HTTP Basic credentials except registration.
+
+  | Method and path | What it does | Who |
+  |---|---|---|
+  | `POST /users` | Register with a username and password | Anyone |
+  | `GET /users/me` | Return the calling user | Any user |
+  | `POST /teams` | Create a team; the caller becomes its first member | Any user |
+  | `GET /teams` | List all teams, paged | Any user |
+  | `GET /teams/{id}` | Team details and members | Members |
+  | `POST /teams/{id}/members` | Add a user by username | Members |
+  | `POST /notes` | Create a private note | Any user |
+  | `GET /notes` | List notes the caller can see, paged; filter by owned, shared, or one team | Any user |
+  | `GET /notes/{id}` | Read one note | Owner, or member of a team it is shared with |
+  | `PUT /notes/{id}` | Replace title and body | Owner |
+  | `DELETE /notes/{id}` | Delete the note and its shares | Owner |
+  | `GET /notes/{id}/shares` | List the teams the note is shared with | Owner |
+  | `PUT /notes/{id}/shares/{teamId}` | Share with a team; repeating it is harmless | Owner |
+  | `DELETE /notes/{id}/shares/{teamId}` | Stop sharing with a team | Owner |
+
+  Errors use Spring's problem-details JSON format: `400` for invalid input, `401` for missing or wrong credentials, `409` for a stale version or a taken username or team name.
+- **Options considered:** Dropping `GET /users/me`, since any authenticated request checks credentials and registration returns the user ID. It was kept.
+- **Rationale:** The list covers each rule in decisions 013 to 021 and nothing more. Sharing is modelled as a sub-resource of the note with `PUT` and `DELETE`, so sharing twice or unsharing twice is safe to repeat.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 024: IDs are UUIDs
+
+- **Decision:** Every table's ID is a UUID.
+- **Options considered:** UUIDs, auto-incrementing numbers.
+- **Rationale:** UUIDs cannot be guessed or enumerated, which matters when IDs appear in URLs for private notes. They also avoid the ID generation differences between H2 and PostgreSQL. Accepted tradeoff: they are harder to read and type than numbers.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 025: Any user can list all teams
+
+- **Decision:** `GET /teams` returns every team's name and ID to any authenticated user. Membership is only visible to members.
+- **Options considered:** List all teams; list only the caller's teams.
+- **Rationale:** Decision 019 lets a user share with a team they are not in, so they need a way to find it. Accepted tradeoff: team names are visible to every registered user.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 026: A note the caller cannot see returns 404; one they cannot change returns 403
+
+- **Decision:** Requests for a note the caller has no access to get `404`. Attempts to change a note the caller can read but does not own get `403`.
+- **Options considered:** `404` or `403` for a note the caller cannot see.
+- **Rationale:** `404` does not reveal that a private note exists. `403` is accurate where the caller already knows the note exists.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 027: The note version is sent in the request body
+
+- **Decision:** A client updating a note includes the `version` it read in the request body. A stale version gets `409`.
+- **Options considered:** Version in the request body; version in an `If-Match` header.
+- **Rationale:** A body field is the simplest to use and to explain. `If-Match` is the HTTP-standard mechanism but is less obvious to someone reading the API for the first time.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 028: Endpoints are versioned under /api/v1
+
+- **Decision:** Every endpoint path starts with `/api/v1`. The service is not live yet, so everything is version 1.
+- **Options considered:** Plain paths; a version prefix.
+- **Rationale:** A version prefix leaves room to change the API later without breaking existing clients.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 029: Membership removal and account changes are deferred
+
+- **Decision:** The first version has no endpoints to remove a team member, leave a team, change a password or delete a user. All four are listed in the README as changes to make with more time.
+- **Options considered:** Include them now; defer them.
+- **Rationale:** None of them is needed for the core use case of writing a note and sharing it. Accepted tradeoff: team membership can only grow, and accounts cannot be changed or removed.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 030: Field limits
+
+- **Decision:** Usernames are 3 to 50 characters. Passwords are at least 8 characters. Note titles are required and up to 200 characters. Note bodies can be empty and are up to 10,000 characters.
+- **Options considered:** None recorded beyond this proposal.
+- **Rationale:** None recorded yet.
+- **Decided by / date:** Steven Brown, 2026-11-11
