@@ -1,0 +1,2 @@
+# BlueStaqAssesment
+Assesment for bluestaq 
