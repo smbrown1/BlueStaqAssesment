@@ -24,3 +24,14 @@ These rules apply to all work in this repository. The task itself is defined in 
 - When a decision is needed, stop and present the options with their tradeoffs and a recommendation, then wait for approval before acting.
 - If something is ambiguous in `Requirements.md`, ask rather than interpret.
 - Once a decision is approved, record it in `DECISIONS.md` in the same commit as (or immediately before) the work that depends on it.
+
+## 4. Keep the Swagger documentation in step with the endpoints
+
+The API is documented with springdoc-openapi and shown in Swagger UI at `/swagger-ui.html`. Whenever an endpoint is added, changed or removed, update its documentation in the same commit:
+
+- Give each controller a `@Tag` and each endpoint an `@Operation` summary.
+- Document every status code the endpoint can return with `@ApiResponse`, including the error cases (`400`, `401`, `403`, `404`, `409` as they apply).
+- Describe request and response fields with `@Schema` where the name alone is not clear, and make sure validation limits show up in the description.
+- HTTP Basic is required by default (set in `OpenApiConfig`). For an endpoint that needs no credentials, add an empty `@SecurityRequirements` annotation so Swagger UI does not show a lock on it, and permit its path in `SecurityConfig`.
+- Add or update a test that checks the endpoint appears in `/v3/api-docs` as intended.
+- If the general setup changes (title, version, security scheme, documentation paths), update `OpenApiConfig`, `SecurityConfig` and `ApiDocsTests` together.
