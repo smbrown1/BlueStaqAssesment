@@ -21,6 +21,29 @@ What I gave up:
 
 The alternative I weighed was PostgreSQL through Docker Compose. It is closer to production, but reviewers would need Docker running, and the tests would need either Docker or a second database anyway. I chose a service that is easy to run over one that is closer to production. Because all data access goes through JPA, the Java code would not change in a swap: it is a driver dependency, connection settings, and a test run against the new database.
 
+### 2. Sharing model: a user owns a note and shares it with teams
+
+The brief says the service is "used and shared amongst several small teams", and leaves open what sharing means. The use case I designed for is that one user writes their notes and then shares them with a team.
+
+The model:
+
+- **A note belongs to the user who wrote it.** It is private until the owner shares it.
+- **The owner can share a note with any number of teams**, including teams they are not a member of, so a note can be passed from one team to another.
+- **Members of those teams can read the note. Only the owner can edit, delete, share or unshare it.**
+- **Anyone can register.** The user who creates a team is its first member, and any member can add others.
+
+Why this model:
+
+- **It matches how notes get written.** Someone drafts a note on their own and shares it when it is ready. The simpler alternative, where every note belongs to exactly one team, has no private notes and cannot share one note with two teams.
+- **Permission checks stay small.** A caller is either the owner or a reader, so there are two cases to build and test. Per-user permissions on each note would be more flexible, but that is more than several small teams need.
+- **Read-only sharing is the smallest version that delivers the use case.** It keeps the first version focused on getting ownership and visibility right.
+
+What I gave up:
+
+- **Teammates cannot edit a shared note.** Collaboration on one note has to go through its owner.
+- **Team members have no roles.** Any member can add members, and nobody is in charge of a team.
+- **A team cannot refuse a note.** Because owners can share with teams they do not belong to, a team can receive notes it did not ask for.
+
 ## What I'd change with more time
 
 - **Move to PostgreSQL.** H2 was chosen to make the service easy to run and review, not because it is the right database for real use. With more time I would run the service on PostgreSQL, provide it through Docker Compose, and run the tests against it so that differences between the two databases are caught.
