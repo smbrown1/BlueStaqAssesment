@@ -270,3 +270,10 @@ Each entry records:
 - **Options considered:** Spring Boot Actuator; a hand-written controller at `/api/v1/health`.
 - **Rationale:** Actuator is built in and widely recognised, and its health check already tests the database, so there is almost no code to write or maintain. Accepted tradeoffs: one more dependency, and the path sits outside the `/api/v1` prefix used by the other endpoints (decision 028). Only the health endpoint is exposed over HTTP, which is Actuator's default.
 - **Decided by / date:** Steven Brown, 2026-11-11
+
+## 034: API documentation is Swagger UI through springdoc-openapi
+
+- **Decision:** The API is described by springdoc-openapi 3.2.0 and shown in Swagger UI at `/swagger-ui.html`. The documentation pages and the OpenAPI description at `/v3/api-docs` need no authentication. HTTP Basic is declared as the default security scheme, so the page has an Authorize button. Endpoint documentation is updated in the same commit as the endpoint (rule 4 in `CLAUDE.md`).
+- **Options considered:** Swagger UI, Scalar, Redoc, Spring REST Docs, an `.http` request file.
+- **Rationale:** Swagger UI is the page reviewers are most likely to recognise, it can send real requests, and it comes with springdoc as one dependency. Scalar looks more modern but is less familiar. Redoc is read-only. Spring REST Docs produces static pages and needs much more setup. The documentation is open so a reviewer can load it before they have an account. Accepted tradeoff: anyone who can reach the service can read the full API description.
+- **Decided by / date:** Steven Brown, 2026-11-11

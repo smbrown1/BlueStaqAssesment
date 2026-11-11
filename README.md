@@ -20,6 +20,8 @@ curl http://localhost:8080/actuator/health
 
 A healthy service answers `200` with `"status":"UP"`, including `"db":{"status":"UP"}`.
 
+Browse and try the endpoints in Swagger UI at http://localhost:8080/swagger-ui.html. Use its Authorize button to enter a username and password.
+
 Run the tests with `./gradlew test`.
 
 ## Design choices I spent the most time on
