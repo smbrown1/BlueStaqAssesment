@@ -41,8 +41,14 @@ Each entry records:
 
 ## 005: Use the most recent compatible versions
 
-- **Decision:** Use the newest stable releases that work together. As checked on 2026-11-11: Spring Boot 4.1.2 (4.2.0 is still a release candidate) and Gradle 9.9.1. The Java version is still open, see the note below.
+- **Decision:** Use the newest stable releases that work together. As checked on 2026-11-11: Spring Boot 4.1.2 (4.2.0 is still a release candidate) and Gradle 9.9.1. The Java version is covered by decision 006.
 - **Options considered:** Latest stable releases, or older maintained lines (Spring Boot 4.0.x).
 - **Rationale:** None recorded yet.
 - **Decided by / date:** Steven Brown, 2026-11-11
-- **Open:** Java version. Spring Boot 4.1.2 supports Java 17, 21, 25 and 27. Java 27 is the newest, Java 25 is the newest long-term-support release, and the only JDK installed on the development machine is 26.
+
+## 006: Java version is 25
+
+- **Decision:** Target Java 25, with a Gradle toolchain so the build fetches the right JDK if it is not installed.
+- **Options considered:** Java 25, Java 27, Java 26. Spring Boot 4.1.2 supports Java 17, 21, 25 and 27.
+- **Rationale:** Java 25 is the newest long-term-support release, so reviewers are most likely to have it or be willing to install it. Java 27 is newer but less likely to be on a reviewer's machine. Java 26 is the only JDK installed on the development machine, but it is a short-lived release that Spring Boot does not list as supported. This narrows decision 005: for Java, "most recent" means most recent long-term-support release.
+- **Decided by / date:** Steven Brown, 2026-11-11
