@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -135,6 +136,108 @@ class ListNotesTests extends IntegrationTest {
 	}
 
 	@Test
+	void includesNotesSharedWithTheCallersTeams() throws Exception {
+		String shared = createNote("alice", "Shared", "");
+		createNote("alice", "Private", "");
+		String teamId = createTeam("alice", "Platform");
+		addMember(teamId, "bob");
+		share(shared, teamId);
+
+		listAs("bob", "")
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.content[*].title", contains("Shared")))
+			.andExpect(jsonPath("$.page.totalElements").value(1));
+	}
+
+	@Test
+	void listsANoteOnceWhenItIsSharedWithTwoOfTheCallersTeams() throws Exception {
+		String shared = createNote("alice", "Shared", "");
+		String platform = createTeam("alice", "Platform");
+		String design = createTeam("alice", "Design");
+		addMember(platform, "bob");
+		addMember(design, "bob");
+		share(shared, platform);
+		share(shared, design);
+
+		listAs("bob", "")
+			.andExpect(jsonPath("$.content", hasSize(1)))
+			.andExpect(jsonPath("$.page.totalElements").value(1));
+	}
+
+	@Test
+	void scopeOwnedLeavesOutNotesSharedWithTheCaller() throws Exception {
+		String shared = createNote("alice", "Shared", "");
+		createNote("bob", "Bob's own", "");
+		String teamId = createTeam("alice", "Platform");
+		addMember(teamId, "bob");
+		share(shared, teamId);
+
+		listAs("bob", "?scope=owned")
+			.andExpect(jsonPath("$.content[*].title", contains("Bob's own")));
+	}
+
+	@Test
+	void scopeSharedLeavesOutTheCallersOwnNotes() throws Exception {
+		String shared = createNote("alice", "Shared", "");
+		createNote("bob", "Bob's own", "");
+		String teamId = createTeam("bob", "Platform");
+		share(shared, teamId);
+
+		listAs("bob", "?scope=SHARED")
+			.andExpect(jsonPath("$.content[*].title", contains("Shared")));
+	}
+
+	@Test
+	void teamIdListsOnlyWhatIsSharedWithThatTeam() throws Exception {
+		String shared = createNote("alice", "Shared", "");
+		createNote("bob", "Bob's own", "");
+		String teamId = createTeam("bob", "Platform");
+		share(shared, teamId);
+
+		listAs("bob", "?teamId=" + teamId + "&scope=owned")
+			.andExpect(jsonPath("$.content[*].title", contains("Shared")));
+	}
+
+	@Test
+	void teamIdForATeamTheCallerIsNotInGets403() throws Exception {
+		String teamId = createTeam("alice", "Platform");
+
+		listAs("bob", "?teamId=" + teamId)
+			.andExpect(status().isForbidden())
+			.andExpect(jsonPath("$.detail").value("You are not a member of this team."));
+	}
+
+	@Test
+	void teamIdForAMissingTeamGets404() throws Exception {
+		listAs("alice", "?teamId=" + java.util.UUID.randomUUID())
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.detail").value("Team not found."));
+	}
+
+	@Test
+	void anUnknownScopeGets400() throws Exception {
+		listAs("alice", "?scope=mine").andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void aTeamIdThatIsNotAUuidGets400() throws Exception {
+		listAs("alice", "?teamId=nope").andExpect(status().isBadRequest());
+	}
+
+	private void addMember(String teamId, String username) throws Exception {
+		mockMvc.perform(post("/api/v1/teams/{id}/members", teamId).with(as("alice"))
+			.contentType(MediaType.APPLICATION_JSON).content("""
+				{"username": "%s"}
+				""".formatted(username)))
+			.andExpect(status().isOk());
+	}
+
+	private void share(String noteId, String teamId) throws Exception {
+		mockMvc.perform(put("/api/v1/notes/{id}/shares/{teamId}", noteId, teamId).with(as("alice")))
+			.andExpect(status().isNoContent());
+	}
+
+	@Test
 	void needsCredentials() throws Exception {
 		mockMvc.perform(get("/api/v1/notes"))
 			.andExpect(status().isUnauthorized());
@@ -144,10 +247,13 @@ class ListNotesTests extends IntegrationTest {
 	void isDocumented() throws Exception {
 		mockMvc.perform(get("/v3/api-docs"))
 			.andExpect(jsonPath("$.paths['/api/v1/notes'].get.summary").isNotEmpty())
-			.andExpect(jsonPath("$.paths['/api/v1/notes'].get.parameters[*].name", containsInAnyOrder("page", "size")))
+			.andExpect(jsonPath("$.paths['/api/v1/notes'].get.parameters[*].name",
+				containsInAnyOrder("page", "size", "scope", "teamId")))
 			.andExpect(jsonPath("$.paths['/api/v1/notes'].get.responses['200']").exists())
 			.andExpect(jsonPath("$.paths['/api/v1/notes'].get.responses['400']").exists())
-			.andExpect(jsonPath("$.paths['/api/v1/notes'].get.responses['401']").exists());
+			.andExpect(jsonPath("$.paths['/api/v1/notes'].get.responses['401']").exists())
+			.andExpect(jsonPath("$.paths['/api/v1/notes'].get.responses['403']").exists())
+			.andExpect(jsonPath("$.paths['/api/v1/notes'].get.responses['404']").exists());
 	}
 
 }

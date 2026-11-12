@@ -1,5 +1,6 @@
 package com.bluestaq.notes.note;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.bluestaq.notes.paging.Paging;
@@ -33,6 +34,9 @@ import org.springframework.web.bind.annotation.RestController;
 @ApiResponse(responseCode = "401", description = "The credentials are missing or wrong.", content = @Content)
 public class NoteController {
 
+	private static final String NOT_FOUND = "There is no such note, or the caller is not allowed to see it.";
+	private static final String NOT_OWNER = "The caller can read the note but does not own it.";
+
 	private final NoteService noteService;
 
 	public NoteController(NoteService noteService) {
@@ -51,25 +55,36 @@ public class NoteController {
 	}
 
 	@GetMapping
-	@Operation(summary = "List the caller's notes",
-		description = "Most recently updated first. The order is fixed.")
+	@Operation(summary = "List notes the caller can read",
+		description = "The caller's own notes and the notes shared with their teams, most recently updated first. "
+			+ "The order is fixed. Narrow the list with scope, or with teamId to see what is shared with one team.")
 	@ApiResponse(responseCode = "200", description = "One page of notes.")
-	@ApiResponse(responseCode = "400", description = "The page or size is not a number.",
+	@ApiResponse(responseCode = "400", description = "The page or size is not a number, the scope is not recognised, or teamId is not a UUID.",
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	@ApiResponse(responseCode = "403", description = "teamId names a team the caller is not a member of.",
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	@ApiResponse(responseCode = "404", description = "teamId names a team that does not exist.",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
 	public Page<NoteResponse> list(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser caller,
+			@Parameter(description = "all: own notes and notes shared with the caller's teams. owned: own notes only. "
+				+ "shared: other people's notes shared with the caller's teams. Ignored when teamId is given.",
+				schema = @Schema(allowableValues = { "all", "owned", "shared" }, defaultValue = "all"))
+			@RequestParam(defaultValue = "all") String scope,
+			@Parameter(description = "List only the notes shared with this team. The caller must be a member of it.")
+			@RequestParam(required = false) UUID teamId,
 			@Parameter(description = "Page number, starting at 0.")
 			@RequestParam(defaultValue = "0") int page,
 			@Parameter(description = "Notes per page. Values above 100 are treated as 100.")
 			@RequestParam(defaultValue = Paging.DEFAULT_SIZE) int size) {
-		return noteService.list(caller.id(), page, size);
+		return noteService.list(caller.id(), NoteScope.parse(scope), teamId, page, size);
 	}
 
 	@GetMapping("/{id}")
-	@Operation(summary = "Read a note")
+	@Operation(summary = "Read a note", description = "Allowed for the owner and for members of a team the note is shared with.")
 	@ApiResponse(responseCode = "200", description = "The note.")
 	@ApiResponse(responseCode = "400", description = "The id is not a UUID.",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
-	@ApiResponse(responseCode = "404", description = "There is no such note, or the caller is not allowed to see it.",
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
 	public NoteResponse get(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser caller,
 			@PathVariable UUID id) {
@@ -78,12 +93,14 @@ public class NoteController {
 
 	@PutMapping("/{id}")
 	@Operation(summary = "Replace a note's title and body",
-		description = "Send the version the note had when you read it. If someone has saved the note since, "
-			+ "the update is rejected with 409 rather than overwriting their change.")
+		description = "Owner only. Send the version the note had when you read it. If the note has been saved since, "
+			+ "the update is rejected with 409 rather than overwriting that change.")
 	@ApiResponse(responseCode = "200", description = "The updated note, with its new version.")
 	@ApiResponse(responseCode = "400", description = "The title, body or version breaks the rules, or the id is not a UUID.",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
-	@ApiResponse(responseCode = "404", description = "There is no such note, or the caller is not allowed to see it.",
+	@ApiResponse(responseCode = "403", description = NOT_OWNER,
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
 	@ApiResponse(responseCode = "409", description = "The note has been saved since the version that was sent.",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
@@ -94,15 +111,64 @@ public class NoteController {
 
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(summary = "Delete a note")
+	@Operation(summary = "Delete a note", description = "Owner only. The note's shares are removed with it.")
 	@ApiResponse(responseCode = "204", description = "The note was deleted.")
 	@ApiResponse(responseCode = "400", description = "The id is not a UUID.",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
-	@ApiResponse(responseCode = "404", description = "There is no such note, or the caller is not allowed to see it.",
+	@ApiResponse(responseCode = "403", description = NOT_OWNER,
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
 	public void delete(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser caller,
 			@PathVariable UUID id) {
 		noteService.delete(caller.id(), id);
+	}
+
+	@GetMapping("/{id}/shares")
+	@Operation(summary = "List the teams a note is shared with", description = "Owner only. Sorted by team name.")
+	@ApiResponse(responseCode = "200", description = "The teams the note is shared with. Empty if it is private.")
+	@ApiResponse(responseCode = "400", description = "The id is not a UUID.",
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	@ApiResponse(responseCode = "403", description = NOT_OWNER,
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	public List<ShareResponse> listShares(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser caller,
+			@PathVariable UUID id) {
+		return noteService.listShares(caller.id(), id);
+	}
+
+	@PutMapping("/{id}/shares/{teamId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Share a note with a team",
+		description = "Owner only. The team's members can then read the note. The owner does not have to be a member "
+			+ "of the team. Sharing with a team the note is already shared with changes nothing.")
+	@ApiResponse(responseCode = "204", description = "The note is shared with the team.")
+	@ApiResponse(responseCode = "400", description = "An id is not a UUID.",
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	@ApiResponse(responseCode = "403", description = NOT_OWNER,
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	@ApiResponse(responseCode = "404", description = "There is no such note or team, or the caller is not allowed to see the note. The message says which.",
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	public void share(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser caller,
+			@PathVariable UUID id, @PathVariable UUID teamId) {
+		noteService.share(caller.id(), id, teamId);
+	}
+
+	@DeleteMapping("/{id}/shares/{teamId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Stop sharing a note with a team",
+		description = "Owner only. If the note was not shared with that team, nothing changes.")
+	@ApiResponse(responseCode = "204", description = "The note is not shared with the team.")
+	@ApiResponse(responseCode = "400", description = "An id is not a UUID.",
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	@ApiResponse(responseCode = "403", description = NOT_OWNER,
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	public void unshare(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser caller,
+			@PathVariable UUID id, @PathVariable UUID teamId) {
+		noteService.unshare(caller.id(), id, teamId);
 	}
 
 }

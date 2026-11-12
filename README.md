@@ -24,6 +24,15 @@ Browse and try the endpoints in Swagger UI at http://localhost:8080/swagger-ui.h
 
 Run the tests with `./gradlew test`.
 
+## Project progress
+
+Phases 0–2 are complete, including the user, authentication, and notes endpoints. Phase 3 (Teams) is in progress: steps 3.1–3.3 are complete, and step 3.4 is next. The team endpoints completed so far are `POST /api/v1/teams` and the paged `GET /api/v1/teams`.
+
+### Remaining work
+
+- **Phase 3 — Teams:** implement `GET /api/v1/users/me/teams`, team details and members, and adding a team member; then stop for Checkpoint 3 review.
+- **Phase 4 — Sharing:** add note sharing with teams, shared-note read permissions and filters, and share cleanup on deletion; then stop for Checkpoint 4 review.
+- **Phase 5 — Finish:** verify the full flow and Swagger documentation, complete this README with the endpoint summary and walkthrough, fill in missing decision rationales, commit and push, verify a fresh clone and reviewer access, then stop for final review.
 ## Design choices I spent the most time on
 
 ### 1. Storage: H2, an embedded SQL database
