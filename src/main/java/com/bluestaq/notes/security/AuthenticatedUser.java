@@ -29,4 +29,10 @@ public record AuthenticatedUser(UUID id, String username, String passwordHash) i
 		return username;
 	}
 
+	/** Replaces the record's generated text, which would print the password hash into logs. */
+	@Override
+	public String toString() {
+		return "AuthenticatedUser[id=" + id + ", username=" + username + "]";
+	}
+
 }
