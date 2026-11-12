@@ -65,6 +65,17 @@ public abstract class IntegrationTest {
 		return JsonPath.read(response, "$.id");
 	}
 
+	/** Creates a team as the given user, who becomes its first member, and returns its id. */
+	protected String createTeam(String username, String name) throws Exception {
+		String response = mockMvc.perform(post("/api/v1/teams").with(as(username))
+			.contentType(MediaType.APPLICATION_JSON).content("""
+				{"name": "%s"}
+				""".formatted(name)))
+			.andExpect(status().isCreated())
+			.andReturn().getResponse().getContentAsString();
+		return JsonPath.read(response, "$.id");
+	}
+
 	/** Sends the request with the HTTP Basic credentials of a user created with {@link #registerUser}. */
 	protected static RequestPostProcessor as(String username) {
 		return httpBasic(username, PASSWORD);

@@ -12,7 +12,7 @@ The order in which features are built, and a log of where the work stands. The d
 
 ## Current position
 
-**Phase 3, step 3.3** (not started).
+**Phase 3, step 3.4** (not started).
 
 ## Phase 0: Foundation
 
@@ -45,7 +45,7 @@ Notes come before teams because they are the core of the service and depend only
 
 - [x] 3.1 Migration: the `teams` and `team_members` tables
 - [x] 3.2 `POST /api/v1/teams`: create a team, creator becomes the first member; name limits from decision 038; taken name gives `409`
-- [ ] 3.3 `GET /api/v1/teams`: list all teams, paged
+- [x] 3.3 `GET /api/v1/teams`: list all teams, paged
 - [ ] 3.4 `GET /api/v1/users/me/teams`: list the teams the caller belongs to (decision 037)
 - [ ] 3.5 `GET /api/v1/teams/{id}`: details and members, members only
 - [ ] 3.6 `POST /api/v1/teams/{id}/members`: add a user by username, members only
@@ -98,3 +98,4 @@ Notes come before teams because they are the core of the service and depend only
 | 2026-11-11 | | Team rules decided: decisions 051 to 053. |
 | 2026-11-11 | 3.1 | `teams` and `team_members` tables created by migration V3; 104 tests passing. |
 | 2026-11-11 | 3.2 | `POST /api/v1/teams` creates a team with the caller as first member; 118 tests passing. |
+| 2026-11-11 | 3.3 | `GET /api/v1/teams` lists every team's id and name, paged, by name; 125 tests passing. |
