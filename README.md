@@ -36,36 +36,28 @@ All `/api/v1` endpoints require HTTP Basic authentication except user registrati
 | `POST` | `/api/v1/users` | Register with a username and password. | Public |
 | `GET` | `/api/v1/users/me` | Get the authenticated user's profile. | Authenticated |
 | `POST` | `/api/v1/notes` | Create a private note. | Authenticated; owner is the caller |
-| `GET` | `/api/v1/notes` | List the caller's own notes, paged. | Authenticated |
-| `GET` | `/api/v1/notes/{id}` | Read a note. | Owner only until sharing is implemented |
+| `GET` | `/api/v1/notes` | List notes the caller can read, paged. Supports `scope=all`, `owned`, or `shared`, and optional `teamId`. | Authenticated; `teamId` requires team membership |
+| `GET` | `/api/v1/notes/{id}` | Read a note. | Owner or member of a team it is shared with |
 | `PUT` | `/api/v1/notes/{id}` | Replace a note's title and body using its current version. | Owner only |
 | `DELETE` | `/api/v1/notes/{id}` | Delete a note. | Owner only |
 | `POST` | `/api/v1/teams` | Create a team; the creator becomes its first member. | Authenticated |
 | `GET` | `/api/v1/teams` | List all teams, paged. | Authenticated |
-
-### Planned
-
-These endpoints are part of the implementation plan and are not available yet:
-
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/api/v1/users/me/teams` | List the teams the caller belongs to. |
-| `GET` | `/api/v1/teams/{id}` | Get a team's details and members. |
-| `POST` | `/api/v1/teams/{id}/members` | Add a user to a team. |
-| `PUT` | `/api/v1/notes/{id}/shares/{teamId}` | Share a note with a team. |
-| `DELETE` | `/api/v1/notes/{id}/shares/{teamId}` | Stop sharing a note with a team. |
-| `GET` | `/api/v1/notes/{id}/shares` | List the teams a note is shared with. |
-| `GET` | `/api/v1/notes` with sharing filters | Include shared notes and filter by ownership or team. |
+| `GET` | `/api/v1/users/me/teams` | List the teams the caller belongs to, paged. | Authenticated |
+| `GET` | `/api/v1/teams/{id}` | Get a team's details and members. | Team members only |
+| `POST` | `/api/v1/teams/{id}/members` | Add a user to a team. | Team members only |
+| `PUT` | `/api/v1/notes/{id}/shares/{teamId}` | Share a note with a team. | Owner only |
+| `DELETE` | `/api/v1/notes/{id}/shares/{teamId}` | Stop sharing a note with a team. | Owner only |
+| `GET` | `/api/v1/notes/{id}/shares` | List the teams a note is shared with. | Owner only |
 
 ## Project progress
 
-Phases 0–2 are complete, including the user, authentication, and notes endpoints. Phase 3 (Teams) is in progress: steps 3.1–3.3 are complete, and step 3.4 is next. The team endpoints completed so far are `POST /api/v1/teams` and the paged `GET /api/v1/teams`.
+The implementation for phases 0–4 is present, including users, notes, teams and note sharing. The test suite passes: 188 tests across 27 suites. Human review checkpoints for phases 3 and 4 are still pending. Phase 5 remains: verify the complete flow and Swagger docs, add a walkthrough, and confirm a fresh clone and reviewer access.
 
 ### Remaining work
 
-- **Phase 3 — Teams:** implement `GET /api/v1/users/me/teams`, team details and members, and adding a team member; then stop for Checkpoint 3 review.
-- **Phase 4 — Sharing:** add note sharing with teams, shared-note read permissions and filters, and share cleanup on deletion; then stop for Checkpoint 4 review.
-- **Phase 5 — Finish:** verify the full flow and Swagger documentation, complete this README with a walkthrough and final endpoint guide, fill in missing decision rationales, commit and push, verify a fresh clone and reviewer access, then stop for final review.
+- **Phase 3 — Teams:** implementation is complete; human review checkpoint pending.
+- **Phase 4 — Sharing:** implementation is complete; human review checkpoint pending.
+- **Phase 5 — Finish:** verify the full flow and Swagger documentation, add a walkthrough, review the final design choices and more-time list, fill in missing decision rationales, commit and push, verify a fresh clone and reviewer access, then stop for final review.
 ## Design choices I spent the most time on
 
 ### 1. Storage: H2, an embedded SQL database

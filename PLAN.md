@@ -12,7 +12,7 @@ The order in which features are built, and a log of where the work stands. The d
 
 ## Current position
 
-**Phase 3, step 3.4** (not started).
+**Implementation in phases 3 and 4 is present. Checkpoints 3 and 4 still need human review before phase 5.** The phase 5 README endpoint guide is in place; the end-to-end walkthrough and final verification remain.
 
 ## Phase 0: Foundation
 
@@ -46,27 +46,27 @@ Notes come before teams because they are the core of the service and depend only
 - [x] 3.1 Migration: the `teams` and `team_members` tables
 - [x] 3.2 `POST /api/v1/teams`: create a team, creator becomes the first member; name limits from decision 038; taken name gives `409`
 - [x] 3.3 `GET /api/v1/teams`: list all teams, paged
-- [ ] 3.4 `GET /api/v1/users/me/teams`: list the teams the caller belongs to (decision 037)
-- [ ] 3.5 `GET /api/v1/teams/{id}`: details and members, members only
-- [ ] 3.6 `POST /api/v1/teams/{id}/members`: add a user by username, members only
+- [x] 3.4 `GET /api/v1/users/me/teams`: list the teams the caller belongs to (decision 037)
+- [x] 3.5 `GET /api/v1/teams/{id}`: details and members, members only
+- [x] 3.6 `POST /api/v1/teams/{id}/members`: add a user by username, members only
 - [ ] **Checkpoint 3:** human review
 
 ## Phase 4: Sharing
 
-- [ ] 4.1 Migration: the `note_shares` table
-- [ ] 4.2 `PUT /api/v1/notes/{id}/shares/{teamId}`: owner shares with a team; repeating is harmless
-- [ ] 4.3 `DELETE /api/v1/notes/{id}/shares/{teamId}`: owner stops sharing
-- [ ] 4.4 `GET /api/v1/notes/{id}/shares`: owner lists the teams
-- [ ] 4.5 Team members can read a shared note; their attempts to change it give `403`
-- [ ] 4.6 `GET /api/v1/notes` includes shared notes, with filters for owned, shared, or one team
-- [ ] 4.7 Deleting a note removes its shares
+- [x] 4.1 Migration: the `note_shares` table
+- [x] 4.2 `PUT /api/v1/notes/{id}/shares/{teamId}`: owner shares with a team; repeating is harmless
+- [x] 4.3 `DELETE /api/v1/notes/{id}/shares/{teamId}`: owner stops sharing
+- [x] 4.4 `GET /api/v1/notes/{id}/shares`: owner lists the teams
+- [x] 4.5 Team members can read a shared note; their attempts to change it give `403`
+- [x] 4.6 `GET /api/v1/notes` includes shared notes, with filters for owned, shared, or one team
+- [x] 4.7 Deleting a note removes its shares
 - [ ] **Checkpoint 4:** human review
 
 ## Phase 5: Finish
 
 - [ ] 5.1 Run through the whole flow against the running service from an empty database
 - [ ] 5.2 Check every endpoint in Swagger UI against the list in decision 023
-- [ ] 5.3 Complete the README: endpoint summary, a walkthrough, final design choices and more-time list
+- [ ] 5.3 Complete the README: endpoint guide is present; add an end-to-end walkthrough and review the final design choices and more-time list
 - [ ] 5.4 Fill in the rationale entries still marked "None recorded yet" in `DECISIONS.md`
 - [ ] 5.5 Commit and push everything: the working tree is clean and `origin/main` matches the local branch
 - [ ] 5.6 Clone the repository into an empty folder and confirm it is runnable from there: the build succeeds, the tests pass, the service starts and the health check answers
@@ -99,3 +99,14 @@ Notes come before teams because they are the core of the service and depend only
 | 2026-11-11 | 3.1 | `teams` and `team_members` tables created by migration V3; 104 tests passing. |
 | 2026-11-11 | 3.2 | `POST /api/v1/teams` creates a team with the caller as first member; 118 tests passing. |
 | 2026-11-11 | 3.3 | `GET /api/v1/teams` lists every team's id and name, paged, by name; 125 tests passing. |
+| 2026-11-11 | 3.4 | `GET /api/v1/users/me/teams` lists the caller's teams, paged. |
+| 2026-11-11 | 3.5 | `GET /api/v1/teams/{id}` returns team details and members to team members. |
+| 2026-11-11 | 3.6 | `POST /api/v1/teams/{id}/members` adds a user by username; existing membership is idempotent. |
+| 2026-11-11 | 4.1 | Migration V4 creates `note_shares` with a composite key and cascading deletion from notes. |
+| 2026-11-11 | 4.2 | `PUT /api/v1/notes/{id}/shares/{teamId}` shares a note with a team idempotently. |
+| 2026-11-11 | 4.3 | `DELETE /api/v1/notes/{id}/shares/{teamId}` removes a note's team share. |
+| 2026-11-11 | 4.4 | `GET /api/v1/notes/{id}/shares` lists the teams a note is shared with. |
+| 2026-11-11 | 4.5 | Team members can read shared notes; non-owner write attempts are forbidden. |
+| 2026-11-11 | 4.6 | `GET /api/v1/notes` includes readable shared notes and supports `scope` and `teamId` filters. |
+| 2026-11-11 | 4.7 | Deleting a note removes its shares through the database cascade. |
+| 2026-11-11 | | Code review confirmed phase 3 and 4 implementations are present; full suite passed: 188 tests across 27 suites, no failures or errors. Checkpoints 3 and 4 still await human review. |
