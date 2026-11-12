@@ -38,6 +38,7 @@ public abstract class IntegrationTest {
 	@BeforeEach
 	void emptyTheDatabase() {
 		// Tables that reference others go first, so no foreign key is broken.
+		jdbc.update("delete from notes");
 		jdbc.update("delete from users");
 	}
 

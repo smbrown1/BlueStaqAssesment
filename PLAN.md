@@ -12,7 +12,7 @@ The order in which features are built, and a log of where the work stands. The d
 
 ## Current position
 
-**Phase 2, step 2.1** (not started). Two review fixes come first: tests without a wrapping transaction, and keeping the password hash out of `toString()`.
+**Phase 2, step 2.2** (not started).
 
 ## Phase 0: Foundation
 
@@ -33,7 +33,7 @@ The order in which features are built, and a log of where the work stands. The d
 
 Notes come before teams because they are the core of the service and depend only on users.
 
-- [ ] 2.1 Migration: the `notes` table
+- [x] 2.1 Migration: the `notes` table
 - [ ] 2.2 `POST /api/v1/notes`: create a private note, with validation; the response includes the owner (decision 039)
 - [ ] 2.3 `GET /api/v1/notes/{id}`: owner can read; anyone else gets `404`
 - [ ] 2.4 `PUT /api/v1/notes/{id}`: owner replaces title and body; stale `version` gives `409`
@@ -88,3 +88,4 @@ Notes come before teams because they are the core of the service and depend only
 | 2026-11-11 | 1.5 | `GET /api/v1/users/me` returns the calling user; 42 tests passing. Phase 1 flow verified against the running service. Stopped at checkpoint 1. |
 | 2026-11-11 | | Whole-project review after phase 1. Plan changed with approval: notes (now phase 2) are built before teams (now phase 3); a "my teams" endpoint, team name limits and the note owner field were added; phase 5 gained push, fresh-clone and access checks. `gradlew` made executable for Mac and Linux. |
 | 2026-11-11 | | Checkpoint 1 approved. Decisions 040 to 045 recorded. |
+| 2026-11-11 | 2.1 | `notes` table created by migration V2; 47 tests passing. |
