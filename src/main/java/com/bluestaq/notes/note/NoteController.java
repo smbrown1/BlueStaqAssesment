@@ -2,6 +2,7 @@ package com.bluestaq.notes.note;
 
 import java.util.UUID;
 
+import com.bluestaq.notes.paging.Paging;
 import com.bluestaq.notes.security.AuthenticatedUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -45,6 +48,20 @@ public class NoteController {
 	public NoteResponse create(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser caller,
 			@Valid @RequestBody CreateNoteRequest request) {
 		return noteService.create(caller.id(), request.title(), request.body());
+	}
+
+	@GetMapping
+	@Operation(summary = "List the caller's notes",
+		description = "Most recently updated first. The order is fixed.")
+	@ApiResponse(responseCode = "200", description = "One page of notes.")
+	@ApiResponse(responseCode = "400", description = "The page or size is not a number.",
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	public Page<NoteResponse> list(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser caller,
+			@Parameter(description = "Page number, starting at 0.")
+			@RequestParam(defaultValue = "0") int page,
+			@Parameter(description = "Notes per page. Values above 100 are treated as 100.")
+			@RequestParam(defaultValue = Paging.DEFAULT_SIZE) int size) {
+		return noteService.list(caller.id(), page, size);
 	}
 
 	@GetMapping("/{id}")

@@ -4,8 +4,11 @@ import java.util.UUID;
 
 import com.bluestaq.notes.error.ConflictException;
 import com.bluestaq.notes.error.NotFoundException;
+import com.bluestaq.notes.paging.Paging;
 import com.bluestaq.notes.user.User;
 import com.bluestaq.notes.user.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class NoteService {
+
+	/** The fixed order of every note list (decision 044). The id breaks ties so pages never overlap. */
+	private static final Sort MOST_RECENTLY_UPDATED_FIRST =
+		Sort.by(Sort.Order.desc("updatedAt"), Sort.Order.asc("id"));
 
 	private final NoteRepository notes;
 	private final UserRepository users;
@@ -41,6 +48,16 @@ public class NoteService {
 	@Transactional(readOnly = true)
 	public NoteResponse get(UUID callerId, UUID noteId) {
 		return NoteResponse.from(findReadable(callerId, noteId));
+	}
+
+	/**
+	 * Lists the caller's own notes, most recently updated first.
+	 * Page and size values out of range are brought into range (see {@link Paging}).
+	 */
+	@Transactional(readOnly = true)
+	public Page<NoteResponse> list(UUID callerId, int page, int size) {
+		return notes.findByOwnerId(callerId, Paging.request(page, size, MOST_RECENTLY_UPDATED_FIRST))
+			.map(NoteResponse::from);
 	}
 
 	/**
