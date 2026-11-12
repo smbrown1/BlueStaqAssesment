@@ -22,7 +22,7 @@ Each entry records:
 
 - **Decision:** The service is written in Java.
 - **Options considered:** None recorded.
-- **Rationale:** None recorded yet.
+- **Rationale:** Familiar Language for many engineers.
 - **Decided by / date:** Steven Brown, 2026-11-11
 
 ## 003: Framework is Spring Boot with Spring MVC
@@ -290,4 +290,25 @@ Each entry records:
 - **Decision:** A password is 8 to 64 characters. It must also fit in 72 bytes once encoded, which only matters for passwords with many non-ASCII characters. Anything longer is rejected with `400`. This extends decision 030.
 - **Options considered:** A limit of 72 bytes; a lower, rounder limit such as 64 characters.
 - **Rationale:** BCrypt cannot hash more than 72 bytes, so some maximum is required to make every character of a password count. 64 characters is simpler to document than a byte count. The byte check stays as a backstop because a 64-character password can exceed 72 bytes if it uses characters outside ASCII.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 037: A "my teams" endpoint lists the caller's teams
+
+- **Decision:** `GET /api/v1/users/me/teams` returns the teams the caller belongs to. This adds a fifteenth endpoint to the list in decision 023.
+- **Options considered:** A separate endpoint under `/users/me`; a filter on `GET /teams`; no endpoint.
+- **Rationale:** `GET /teams` lists every team (decision 025), and nothing else tells a user which ones they are a member of. The path sits beside `GET /users/me`, which already means "the caller".
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 038: Team name limits
+
+- **Decision:** A team name is required and is 3 to 50 characters once spaces at either end are removed. Spaces inside the name are allowed. Names are unique ignoring case, so `Platform` and `platform` cannot both exist. This extends decision 030.
+- **Options considered:** None recorded beyond this proposal.
+- **Rationale:** The length limits match usernames. Unlike usernames, team names are for display and are never typed as credentials, so they can contain spaces and keep the case they were given. Uniqueness ignores case because two teams whose names differ only by case would be hard to tell apart when sharing a note.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 039: A note response includes its owner
+
+- **Decision:** Every response that returns a note includes an `owner` field with the owner's ID and username.
+- **Options considered:** No owner field; owner ID only; owner ID and username.
+- **Rationale:** Someone reading a note shared with their team needs to know who wrote it. The username is what people recognise, and the ID lets a client compare it with the caller's own ID.
 - **Decided by / date:** Steven Brown, 2026-11-11

@@ -12,7 +12,7 @@ The order in which features are built, and a log of where the work stands. The d
 
 ## Current position
 
-**Checkpoint 1**: phase 1 is built and waiting for human review. Phase 2 has not started.
+**Checkpoint 1**: phase 1 is built and waiting for human review. Phase 2 (notes) has not started.
 
 ## Phase 0: Foundation
 
@@ -29,23 +29,26 @@ The order in which features are built, and a log of where the work stands. The d
 - [x] 1.5 `GET /api/v1/users/me`
 - [ ] **Checkpoint 1:** human review
 
-## Phase 2: Teams
+## Phase 2: Notes
 
-- [ ] 2.1 Migration: the `teams` and `team_members` tables
-- [ ] 2.2 `POST /api/v1/teams`: create a team, creator becomes the first member; taken name gives `409`
-- [ ] 2.3 `GET /api/v1/teams`: list all teams, paged
-- [ ] 2.4 `GET /api/v1/teams/{id}`: details and members, members only
-- [ ] 2.5 `POST /api/v1/teams/{id}/members`: add a user by username, members only
+Notes come before teams because they are the core of the service and depend only on users.
+
+- [ ] 2.1 Migration: the `notes` table
+- [ ] 2.2 `POST /api/v1/notes`: create a private note, with validation; the response includes the owner (decision 039)
+- [ ] 2.3 `GET /api/v1/notes/{id}`: owner can read; anyone else gets `404`
+- [ ] 2.4 `PUT /api/v1/notes/{id}`: owner replaces title and body; stale `version` gives `409`
+- [ ] 2.5 `DELETE /api/v1/notes/{id}`: owner only
+- [ ] 2.6 `GET /api/v1/notes`: list the caller's own notes, paged
 - [ ] **Checkpoint 2:** human review
 
-## Phase 3: Notes
+## Phase 3: Teams
 
-- [ ] 3.1 Migration: the `notes` table
-- [ ] 3.2 `POST /api/v1/notes`: create a private note, with validation
-- [ ] 3.3 `GET /api/v1/notes/{id}`: owner can read; anyone else gets `404`
-- [ ] 3.4 `PUT /api/v1/notes/{id}`: owner replaces title and body; stale `version` gives `409`
-- [ ] 3.5 `DELETE /api/v1/notes/{id}`: owner only
-- [ ] 3.6 `GET /api/v1/notes`: list the caller's own notes, paged
+- [ ] 3.1 Migration: the `teams` and `team_members` tables
+- [ ] 3.2 `POST /api/v1/teams`: create a team, creator becomes the first member; name limits from decision 038; taken name gives `409`
+- [ ] 3.3 `GET /api/v1/teams`: list all teams, paged
+- [ ] 3.4 `GET /api/v1/users/me/teams`: list the teams the caller belongs to (decision 037)
+- [ ] 3.5 `GET /api/v1/teams/{id}`: details and members, members only
+- [ ] 3.6 `POST /api/v1/teams/{id}/members`: add a user by username, members only
 - [ ] **Checkpoint 3:** human review
 
 ## Phase 4: Sharing
@@ -65,6 +68,9 @@ The order in which features are built, and a log of where the work stands. The d
 - [ ] 5.2 Check every endpoint in Swagger UI against the list in decision 023
 - [ ] 5.3 Complete the README: endpoint summary, a walkthrough, final design choices and more-time list
 - [ ] 5.4 Fill in the rationale entries still marked "None recorded yet" in `DECISIONS.md`
+- [ ] 5.5 Commit and push everything: the working tree is clean and `origin/main` matches the local branch
+- [ ] 5.6 Clone the repository into an empty folder and confirm it is runnable from there: the build succeeds, the tests pass, the service starts and the health check answers
+- [ ] 5.7 Confirm the reviewers can open the repository link
 - [ ] **Checkpoint 5:** final human review before submission
 
 ## Progress log
@@ -80,3 +86,4 @@ The order in which features are built, and a log of where the work stands. The d
 | 2026-11-11 | 1.3 | Registration returns `400` for invalid input and `409` for a taken username, as problem-details JSON; 33 tests passing. |
 | 2026-11-11 | 1.4 | HTTP Basic credentials are checked against the `users` table; 39 tests passing. |
 | 2026-11-11 | 1.5 | `GET /api/v1/users/me` returns the calling user; 42 tests passing. Phase 1 flow verified against the running service. Stopped at checkpoint 1. |
+| 2026-11-11 | | Whole-project review after phase 1. Plan changed with approval: notes (now phase 2) are built before teams (now phase 3); a "my teams" endpoint, team name limits and the note owner field were added; phase 5 gained push, fresh-clone and access checks. `gradlew` made executable for Mac and Linux. |
