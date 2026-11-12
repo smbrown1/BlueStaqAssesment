@@ -12,7 +12,7 @@ The order in which features are built, and a log of where the work stands. The d
 
 ## Current position
 
-**Phase 3, step 3.1** (not started).
+**Phase 3, step 3.2** (not started).
 
 ## Phase 0: Foundation
 
@@ -43,7 +43,7 @@ Notes come before teams because they are the core of the service and depend only
 
 ## Phase 3: Teams
 
-- [ ] 3.1 Migration: the `teams` and `team_members` tables
+- [x] 3.1 Migration: the `teams` and `team_members` tables
 - [ ] 3.2 `POST /api/v1/teams`: create a team, creator becomes the first member; name limits from decision 038; taken name gives `409`
 - [ ] 3.3 `GET /api/v1/teams`: list all teams, paged
 - [ ] 3.4 `GET /api/v1/users/me/teams`: list the teams the caller belongs to (decision 037)
@@ -96,3 +96,4 @@ Notes come before teams because they are the core of the service and depend only
 | 2026-11-11 | 2.6 | `GET /api/v1/notes` lists the caller's own notes, paged, most recently updated first; 97 tests passing. Notes flow verified against the running service. Stopped at checkpoint 2. |
 | 2026-11-11 | | Checkpoint 2 approved. Decisions 046 to 050 recorded. |
 | 2026-11-11 | | Team rules decided: decisions 051 to 053. |
+| 2026-11-11 | 3.1 | `teams` and `team_members` tables created by migration V3; 104 tests passing. |
