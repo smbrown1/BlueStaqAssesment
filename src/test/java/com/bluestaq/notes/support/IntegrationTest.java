@@ -52,6 +52,17 @@ public abstract class IntegrationTest {
 		return JsonPath.read(response, "$.id");
 	}
 
+	/** Creates a note as the given user and returns its id. */
+	protected String createNote(String username, String title, String body) throws Exception {
+		String response = mockMvc.perform(post("/api/v1/notes").with(as(username))
+			.contentType(MediaType.APPLICATION_JSON).content("""
+				{"title": "%s", "body": "%s"}
+				""".formatted(title, body)))
+			.andExpect(status().isCreated())
+			.andReturn().getResponse().getContentAsString();
+		return JsonPath.read(response, "$.id");
+	}
+
 	/** Sends the request with the HTTP Basic credentials of a user created with {@link #registerUser}. */
 	protected static RequestPostProcessor as(String username) {
 		return httpBasic(username, PASSWORD);
