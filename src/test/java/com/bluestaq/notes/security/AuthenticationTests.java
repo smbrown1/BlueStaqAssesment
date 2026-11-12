@@ -3,40 +3,25 @@ package com.bluestaq.notes.security;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.bluestaq.notes.support.IntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * HTTP Basic credentials are checked against registered users. The tests call a path
  * that has no endpoint: 404 means the caller got past authentication, 401 means they did not.
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-class AuthenticationTests {
+class AuthenticationTests extends IntegrationTest {
 
 	private static final String PROTECTED_PATH = "/api/v1/no-such-endpoint";
 
-	@Autowired
-	private MockMvc mockMvc;
-
 	@BeforeEach
 	void registerAlice() throws Exception {
-		mockMvc.perform(post("/api/v1/users").contentType(MediaType.APPLICATION_JSON).content("""
-			{"username": "alice", "password": "correct-horse"}
-			"""))
-			.andExpect(status().isCreated());
+		registerUser("alice");
 	}
 
 	@Test

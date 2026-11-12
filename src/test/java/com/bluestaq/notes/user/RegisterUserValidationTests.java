@@ -6,26 +6,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.bluestaq.notes.support.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-class RegisterUserValidationTests {
+class RegisterUserValidationTests extends IntegrationTest {
 
 	private static final String VALID_PASSWORD = "correct-horse";
-
-	@Autowired
-	private MockMvc mockMvc;
 
 	private ResultActions postJson(String body) throws Exception {
 		return mockMvc.perform(post("/api/v1/users").contentType(MediaType.APPLICATION_JSON).content(body));

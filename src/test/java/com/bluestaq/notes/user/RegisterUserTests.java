@@ -6,30 +6,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import jakarta.persistence.EntityManager;
+import com.bluestaq.notes.support.IntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-class RegisterUserTests {
-
-	@Autowired
-	private MockMvc mockMvc;
-
-	@Autowired
-	private JdbcTemplate jdbc;
-
-	@Autowired
-	private EntityManager entityManager;
+class RegisterUserTests extends IntegrationTest {
 
 	private ResultActions register(String username, String password) throws Exception {
 		String body = """
@@ -57,8 +39,6 @@ class RegisterUserTests {
 	@Test
 	void storesThePasswordAsABcryptHash() throws Exception {
 		register("alice", "correct-horse");
-		// The test shares one transaction with the request, so push the pending insert to the database.
-		entityManager.flush();
 
 		String stored = jdbc.queryForObject(
 			"select password_hash from users where username = ?", String.class, "alice");

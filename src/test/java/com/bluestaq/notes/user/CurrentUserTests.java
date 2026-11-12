@@ -1,44 +1,20 @@
 package com.bluestaq.notes.user;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
+import com.bluestaq.notes.support.IntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-class CurrentUserTests {
-
-	@Autowired
-	private MockMvc mockMvc;
-
-	/** Registers a user and returns their id. */
-	private String register(String username) throws Exception {
-		String response = mockMvc.perform(post("/api/v1/users").contentType(MediaType.APPLICATION_JSON).content("""
-			{"username": "%s", "password": "correct-horse"}
-			""".formatted(username)))
-			.andExpect(status().isCreated())
-			.andReturn().getResponse().getContentAsString();
-		return JsonPath.read(response, "$.id");
-	}
+class CurrentUserTests extends IntegrationTest {
 
 	@Test
 	void returnsTheCallingUser() throws Exception {
-		String aliceId = register("alice");
-		register("bob");
+		String aliceId = registerUser("alice");
+		registerUser("bob");
 
-		mockMvc.perform(get("/api/v1/users/me").with(httpBasic("alice", "correct-horse")))
+		mockMvc.perform(get("/api/v1/users/me").with(as("alice")))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.id").value(aliceId))
 			.andExpect(jsonPath("$.username").value("alice"))
