@@ -1,5 +1,7 @@
 package com.bluestaq.notes.note;
 
+import java.util.UUID;
+
 import com.bluestaq.notes.security.AuthenticatedUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +43,18 @@ public class NoteController {
 	public NoteResponse create(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser caller,
 			@Valid @RequestBody CreateNoteRequest request) {
 		return noteService.create(caller.id(), request.title(), request.body());
+	}
+
+	@GetMapping("/{id}")
+	@Operation(summary = "Read a note")
+	@ApiResponse(responseCode = "200", description = "The note.")
+	@ApiResponse(responseCode = "400", description = "The id is not a UUID.",
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	@ApiResponse(responseCode = "404", description = "There is no such note, or the caller is not allowed to see it.",
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	public NoteResponse get(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser caller,
+			@PathVariable UUID id) {
+		return noteService.get(caller.id(), id);
 	}
 
 }

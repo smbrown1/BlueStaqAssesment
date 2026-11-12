@@ -2,6 +2,7 @@ package com.bluestaq.notes.note;
 
 import java.util.UUID;
 
+import com.bluestaq.notes.error.NotFoundException;
 import com.bluestaq.notes.user.User;
 import com.bluestaq.notes.user.UserRepository;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,26 @@ public class NoteService {
 		User owner = users.getReferenceById(callerId);
 		Note note = notes.saveAndFlush(new Note(owner, title, body == null ? "" : body));
 		return NoteResponse.from(note);
+	}
+
+	/**
+	 * Returns a note the caller is allowed to read.
+	 *
+	 * @throws NotFoundException if there is no such note, or the caller may not see it
+	 */
+	@Transactional(readOnly = true)
+	public NoteResponse get(UUID callerId, UUID noteId) {
+		return NoteResponse.from(findReadable(callerId, noteId));
+	}
+
+	/**
+	 * Finds a note the caller may read. A note the caller may not see is reported exactly
+	 * like one that does not exist, so its existence is not revealed (decision 026).
+	 */
+	private Note findReadable(UUID callerId, UUID noteId) {
+		return notes.findById(noteId)
+			.filter(note -> note.getOwner().getId().equals(callerId))
+			.orElseThrow(() -> new NotFoundException("Note not found."));
 	}
 
 }
