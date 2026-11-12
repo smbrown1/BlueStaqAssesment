@@ -389,3 +389,24 @@ Each entry records:
 - **Options considered:** Full notes; list items without the body.
 - **Rationale:** One response shape for a note everywhere is simpler to use and document, and a client can show a list without a request per note. Accepted tradeoff: with bodies of up to 10,000 characters, a page of 100 notes can be about 1 MB.
 - **Decided by / date:** Steven Brown, 2026-11-11
+
+## 051: Adding a username that does not exist returns 404
+
+- **Decision:** `POST /teams/{id}/members` with a username that is not registered gets `404`, with a message naming the missing user.
+- **Options considered:** `404`; `422 Unprocessable Content`; `400`.
+- **Rationale:** The request is well-formed, so `400` would mislead. `422` is the more precise code but would be used nowhere else in the API. Saying the user does not exist reveals nothing new, because registration already reports taken usernames with `409`. Accepted tradeoff: `404` on this endpoint can mean the team or the user is missing, so the message has to say which.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 052: Adding an existing member succeeds
+
+- **Decision:** Adding a user who is already a member returns `200` with the team and its members, the same response as a first-time add.
+- **Options considered:** Succeed with `200`; reject with `409`.
+- **Rationale:** The caller wanted that user in the team, and they are. This matches sharing a note, where repeating the request is harmless (decision 023), and it means two members adding the same person at once both succeed. `409` would make every client handle an error for a request whose goal is already met.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 053: A non-member gets 403 for a team that exists
+
+- **Decision:** A user who is not a member gets `403` when viewing a team or adding a member to it. A team ID that does not exist gets `404`.
+- **Options considered:** `403`; `404`.
+- **Rationale:** Team names and IDs are visible to every user (decision 025), so hiding a team behind `404` protects nothing. This follows decision 026: `404` when existence should stay hidden, `403` when the caller already knows the thing exists.
+- **Decided by / date:** Steven Brown, 2026-11-11
