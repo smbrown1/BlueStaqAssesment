@@ -354,3 +354,38 @@ Each entry records:
 - **Options considered:** Spring Data's standard page format; a hand-written response type.
 - **Rationale:** The format is built into Spring Data and stable, so there is no code to write or maintain. Accepted tradeoff: the field names are Spring's rather than ours.
 - **Decided by / date:** Steven Brown, 2026-11-11
+
+## 046: A missing note body is stored as empty
+
+- **Decision:** When a create or update request leaves out `body`, the note is stored with an empty body. On update this means leaving `body` out empties the note.
+- **Options considered:** Treat a missing body as empty; reject a missing body with `400`; on update, keep the existing body.
+- **Rationale:** The body is optional (decision 030), so a title-only note should not need an explicit empty string. Update is a full replacement (`PUT`), so it follows the same rule as create rather than keeping the old body, which would make it a partial update.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 047: A blank note title is rejected; titles are not trimmed
+
+- **Decision:** A title made only of spaces gets `400`. Otherwise the title is stored exactly as sent.
+- **Options considered:** Reject blank titles; allow them; trim titles before storing.
+- **Rationale:** A required title that can be blank is not really required. Storing the text as sent keeps the service from silently changing what the user wrote.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 048: Out-of-range paging values are adjusted, not rejected
+
+- **Decision:** A page size above 100 is treated as 100, a size below 1 as 1, and a negative page number as 0. A page or size that is not a number gets `400`.
+- **Options considered:** Adjust out-of-range values; reject them with `400`.
+- **Rationale:** A caller asking for too much still gets a useful answer, and the response states the size actually used. This is also how Spring Data's own paging support behaves. A value that is not a number has no sensible adjustment, so it is an error.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 049: Deleting a note does not check the version
+
+- **Decision:** `DELETE /notes/{id}` needs no `version`. Only updates are checked for edit conflicts.
+- **Options considered:** Unconditional delete; delete only if the caller's version is current.
+- **Rationale:** Conflict detection exists to stop one save silently overwriting another. A delete overwrites nothing, and only the owner can delete. Accepted tradeoff: the owner can delete a note from one session just after editing it in another.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 050: Note lists return full notes, including bodies
+
+- **Decision:** Each item in a list of notes is the full note, body included.
+- **Options considered:** Full notes; list items without the body.
+- **Rationale:** One response shape for a note everywhere is simpler to use and document, and a client can show a list without a request per note. Accepted tradeoff: with bodies of up to 10,000 characters, a page of 100 notes can be about 1 MB.
+- **Decided by / date:** Steven Brown, 2026-11-11
