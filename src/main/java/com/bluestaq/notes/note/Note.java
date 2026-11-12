@@ -57,6 +57,13 @@ public class Note {
 		this.updatedAt = this.createdAt;
 	}
 
+	/** Replaces the title and body and records the time of the change. */
+	public void replaceContent(String title, String body) {
+		this.title = title;
+		this.body = body;
+		this.updatedAt = Instant.now();
+	}
+
 	public UUID getId() {
 		return id;
 	}

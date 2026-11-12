@@ -2,9 +2,11 @@ package com.bluestaq.notes.note;
 
 import java.util.UUID;
 
+import com.bluestaq.notes.error.ConflictException;
 import com.bluestaq.notes.error.NotFoundException;
 import com.bluestaq.notes.user.User;
 import com.bluestaq.notes.user.UserRepository;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,37 @@ public class NoteService {
 	@Transactional(readOnly = true)
 	public NoteResponse get(UUID callerId, UUID noteId) {
 		return NoteResponse.from(findReadable(callerId, noteId));
+	}
+
+	/**
+	 * Replaces a note's title and body. A missing body is stored as empty.
+	 *
+	 * @param expectedVersion the version the caller last read
+	 * @throws NotFoundException if there is no such note, or the caller may not see it
+	 * @throws ConflictException if the note has been saved since the caller read it
+	 */
+	@Transactional
+	public NoteResponse update(UUID callerId, UUID noteId, String title, String body, long expectedVersion) {
+		Note note = findReadable(callerId, noteId);
+		if (note.getVersion() != expectedVersion) {
+			throw staleVersion();
+		}
+		note.replaceContent(title, body == null ? "" : body);
+		try {
+			// Flushing now makes the database check the version: the UPDATE only matches the row
+			// if its version is still the one read above.
+			notes.saveAndFlush(note);
+		}
+		catch (ObjectOptimisticLockingFailureException ex) {
+			// Another save committed between the check above and this one.
+			throw staleVersion();
+		}
+		return NoteResponse.from(note);
+	}
+
+	private static ConflictException staleVersion() {
+		return new ConflictException(
+			"The note has been changed since you read it. Read it again and reapply your changes.");
 	}
 
 	/**
