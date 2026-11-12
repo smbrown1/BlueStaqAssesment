@@ -12,7 +12,7 @@ The order in which features are built, and a log of where the work stands. The d
 
 ## Current position
 
-**Phase 2, step 2.5** (not started).
+**Phase 2, step 2.6** (not started).
 
 ## Phase 0: Foundation
 
@@ -37,7 +37,7 @@ Notes come before teams because they are the core of the service and depend only
 - [x] 2.2 `POST /api/v1/notes`: create a private note, with validation; the response includes the owner (decision 039)
 - [x] 2.3 `GET /api/v1/notes/{id}`: owner can read; anyone else gets `404`
 - [x] 2.4 `PUT /api/v1/notes/{id}`: owner replaces title and body; stale `version` gives `409`
-- [ ] 2.5 `DELETE /api/v1/notes/{id}`: owner only
+- [x] 2.5 `DELETE /api/v1/notes/{id}`: owner only
 - [ ] 2.6 `GET /api/v1/notes`: list the caller's own notes, paged
 - [ ] **Checkpoint 2:** human review
 
@@ -92,3 +92,4 @@ Notes come before teams because they are the core of the service and depend only
 | 2026-11-11 | 2.2 | `POST /api/v1/notes` creates a private note and returns it with its owner; 57 tests passing. |
 | 2026-11-11 | 2.3 | `GET /api/v1/notes/{id}` returns a note to its owner and `404` to anyone else; 64 tests passing. |
 | 2026-11-11 | 2.4 | `PUT /api/v1/notes/{id}` replaces title and body and rejects a stale version with `409`; 76 tests passing. |
+| 2026-11-11 | 2.5 | `DELETE /api/v1/notes/{id}` lets the owner delete a note; 82 tests passing. |

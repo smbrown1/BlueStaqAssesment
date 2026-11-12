@@ -69,6 +69,16 @@ public class NoteService {
 		return NoteResponse.from(note);
 	}
 
+	/**
+	 * Deletes a note.
+	 *
+	 * @throws NotFoundException if there is no such note, or the caller may not see it
+	 */
+	@Transactional
+	public void delete(UUID callerId, UUID noteId) {
+		notes.delete(findReadable(callerId, noteId));
+	}
+
 	private static ConflictException staleVersion() {
 		return new ConflictException(
 			"The note has been changed since you read it. Read it again and reapply your changes.");

@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -72,6 +73,19 @@ public class NoteController {
 	public NoteResponse update(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser caller,
 			@PathVariable UUID id, @Valid @RequestBody UpdateNoteRequest request) {
 		return noteService.update(caller.id(), id, request.title(), request.body(), request.version());
+	}
+
+	@DeleteMapping("/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "Delete a note")
+	@ApiResponse(responseCode = "204", description = "The note was deleted.")
+	@ApiResponse(responseCode = "400", description = "The id is not a UUID.",
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	@ApiResponse(responseCode = "404", description = "There is no such note, or the caller is not allowed to see it.",
+		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+	public void delete(@Parameter(hidden = true) @AuthenticationPrincipal AuthenticatedUser caller,
+			@PathVariable UUID id) {
+		noteService.delete(caller.id(), id);
 	}
 
 }
