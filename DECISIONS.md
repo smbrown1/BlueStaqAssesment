@@ -312,3 +312,45 @@ Each entry records:
 - **Options considered:** No owner field; owner ID only; owner ID and username.
 - **Rationale:** Someone reading a note shared with their team needs to know who wrote it. The username is what people recognise, and the ID lets a client compare it with the caller's own ID.
 - **Decided by / date:** Steven Brown, 2026-11-11
+
+## 040: CSRF protection is turned off
+
+- **Decision:** Spring Security's CSRF protection is disabled.
+- **Options considered:** Leave it on and require a CSRF token on every write; turn it off.
+- **Rationale:** CSRF protection guards browser sessions that authenticate with a cookie. This API has no session and no cookie: every request carries its own HTTP Basic credentials. With protection on, every `POST` was rejected with `403`.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 041: Validation errors name the invalid fields
+
+- **Decision:** A `400` for invalid input adds an `errors` object to the problem-details response, mapping each invalid field to its message.
+- **Options considered:** The standard problem-details body alone; the body plus an `errors` object.
+- **Rationale:** The standard body only says "Invalid request content", which does not tell the caller what to fix. Problem details allows extra members, so this stays within the format chosen in decision 023.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 042: A 401 response has an empty body
+
+- **Decision:** Requests with missing or wrong credentials get `401` with a `WWW-Authenticate: Basic` header and no body, which is Spring Security's default.
+- **Options considered:** The default empty body; a problem-details body like the other errors.
+- **Rationale:** The status code and header already say everything a client needs. A problem-details body would need a custom entry point for no new information. Accepted tradeoff: `401` is the one error that is not problem-details JSON.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 043: The unique constraint settles simultaneous registrations
+
+- **Decision:** Registration checks whether the username exists, and also treats a unique-constraint failure on insert as "username taken", returning `409`.
+- **Options considered:** The existence check alone; the check plus translating the constraint failure.
+- **Rationale:** Two requests for the same username can both pass the existence check before either inserts. The database constraint is what finally decides, and without the translation the loser would get `500`. Accepted tradeoff: no automated test covers the simultaneous case, because it needs two transactions racing.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 044: Lists return 20 items per page, at most 100, most recently updated first
+
+- **Decision:** Paged lists default to 20 items per page. A caller may ask for up to 100. Notes are sorted by last update time, most recent first, and the caller cannot change the order.
+- **Options considered:** 20 per page with a fixed order; 20 per page with a caller-chosen sort; 50 per page with a maximum of 200.
+- **Rationale:** A maximum stops a caller from asking for an unbounded page. A fixed order means there is no sort parameter to validate and test, and most recently updated first is what someone looking for their current work wants.
+- **Decided by / date:** Steven Brown, 2026-11-11
+
+## 045: Pages use Spring Data's standard JSON format
+
+- **Decision:** A page of results is returned as `{"content": [...], "page": {"size", "number", "totalElements", "totalPages"}}`. Page numbers start at 0.
+- **Options considered:** Spring Data's standard page format; a hand-written response type.
+- **Rationale:** The format is built into Spring Data and stable, so there is no code to write or maintain. Accepted tradeoff: the field names are Spring's rather than ours.
+- **Decided by / date:** Steven Brown, 2026-11-11
