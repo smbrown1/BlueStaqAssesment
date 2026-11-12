@@ -1,4 +1,4 @@
-# BlueStaqAssesment
+# BlueStaq Assessment
 
 Backend for a note-taking service shared among several small teams. Built with Java 25, Spring Boot and Gradle. The task is described in `Requirements.md`, and every design decision is logged in `DECISIONS.md`.
 
